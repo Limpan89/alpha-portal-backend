@@ -1,4 +1,5 @@
 ﻿using Data.Contexts;
+using Domain.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System.Diagnostics;
@@ -6,17 +7,17 @@ using System.Linq.Expressions;
 
 namespace Data.Repositories;
 
-public interface IBaseRepository<TEntity> where TEntity : class
+public interface IBaseRepository<TEntity, TModel> where TEntity : class
 {
     Task<RepositoryResult> AddAsync(TEntity entity);
     Task<RepositoryResult> DeleteAsync(Expression<Func<TEntity, bool>> expression);
     Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> expression);
-    Task<RepositoryResult<IEnumerable<TEntity>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null, Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes);
-    Task<RepositoryResult<TEntity>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes);
+    Task<RepositoryResult<IEnumerable<TModel>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null, Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes);
+    Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes);
     Task<RepositoryResult> UpdateAsync(TEntity entity);
 }
 
-public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
+public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity, TModel> where TEntity : class
 {
     protected readonly DataContext _context;
     protected readonly DbSet<TEntity> _dbSet;
@@ -69,7 +70,7 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
         }
     }
 
-    public virtual async Task<RepositoryResult<IEnumerable<TEntity>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null,
+    public virtual async Task<RepositoryResult<IEnumerable<TModel>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null,
         Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet;
@@ -86,10 +87,12 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
         if (sortBy != null)
             query = orderByDescending ? query.OrderByDescending(sortBy) : query.OrderBy(sortBy);
 
-        return new RepositoryResult<IEnumerable<TEntity>> { Succeded = true, Result = await query.ToListAsync() };
+        var entities = await query.ToListAsync();
+        var models = entities.Select(e => MappingExtensions.MapTo<TModel>(e));
+        return new RepositoryResult<IEnumerable<TModel>> { Succeded = true, Result = models };
     }
 
-    public virtual async Task<RepositoryResult<TEntity>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes)
+    public virtual async Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet;
 
@@ -100,7 +103,11 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
         }
 
         var entity = await query.FirstOrDefaultAsync(findBy);
-        return new RepositoryResult<TEntity> { Succeded = entity != null, Result = entity ?? null };
+        if (entity == null)
+            return new RepositoryResult<TModel> { Succeded = false };
+
+        var model = MappingExtensions.MapTo<TModel>(entity);
+        return new RepositoryResult<TModel> { Succeded = true, Result = model };
     }
 
     public virtual async Task<RepositoryResult> UpdateAsync(TEntity entity)
