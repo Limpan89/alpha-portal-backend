@@ -1,10 +1,20 @@
 ﻿using Data.Contexts;
-using Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
 namespace Data.Repositories;
+
+public interface IBaseRepository<TEntity> where TEntity : class
+{
+    Task<RepositoryResult> AddAsync(TEntity entity);
+    Task<RepositoryResult> DeleteAsync(Expression<Func<TEntity, bool>> expression);
+    Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> expression);
+    Task<RepositoryResult<IEnumerable<TEntity>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null, Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes);
+    Task<RepositoryResult<TEntity>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes);
+    Task<RepositoryResult> UpdateAsync(TEntity entity);
+}
 
 public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
@@ -17,49 +27,49 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
         _dbSet = _context.Set<TEntity>();
     }
 
-    public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> expression)
+    public virtual async Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> expression)
     {
-        return await _dbSet.AnyAsync(expression);
+        return new RepositoryResult { Succeded = await _dbSet.AnyAsync(expression) };
     }
 
-    public virtual async Task<bool> AddAsync(TEntity entity)
+    public virtual async Task<RepositoryResult> AddAsync(TEntity entity)
     {
         if (entity == null)
-            return false;
+            return new RepositoryResult { Succeded = false };
 
         try
         {
             _dbSet.Add(entity);
             await _context.SaveChangesAsync();
-            return await _dbSet.ContainsAsync(entity);
+            return new RepositoryResult { Succeded = true };
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return false;
+            return new RepositoryResult { Succeded = false };
         }
     }
 
-    public virtual async Task<bool> DeleteAsync(Expression<Func<TEntity, bool>> expression)
+    public virtual async Task<RepositoryResult> DeleteAsync(Expression<Func<TEntity, bool>> expression)
     {
         var entity = await _dbSet.FirstOrDefaultAsync(expression);
         if (entity == default)
-            return false;
+            return new RepositoryResult { Succeded = false };
 
         try
         {
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
-            return await _dbSet.AnyAsync(expression);
+            return new RepositoryResult { Succeded = await _dbSet.AnyAsync(expression) };
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return false;
+            return new RepositoryResult { Succeded = false };
         }
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null,
+    public virtual async Task<RepositoryResult<IEnumerable<TEntity>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null,
         Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet;
@@ -76,10 +86,10 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
         if (sortBy != null)
             query = orderByDescending ? query.OrderByDescending(sortBy) : query.OrderBy(sortBy);
 
-        return await query.ToListAsync();
+        return new RepositoryResult<IEnumerable<TEntity>> { Succeded = true, Result = await query.ToListAsync() };
     }
 
-    public virtual async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes)
+    public virtual async Task<RepositoryResult<TEntity>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = _dbSet;
 
@@ -90,24 +100,24 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
         }
 
         var entity = await query.FirstOrDefaultAsync(findBy);
-        return entity ?? null;
+        return new RepositoryResult<TEntity> { Succeded = entity != null, Result = entity ?? null };
     }
 
-    public virtual async Task<bool> UpdateAsync(TEntity entity)
+    public virtual async Task<RepositoryResult> UpdateAsync(TEntity entity)
     {
         if (entity == null)
-            return false;
+            return new RepositoryResult { Succeded = false };
 
         try
         {
             _dbSet.Update(entity);
             await _context.SaveChangesAsync();
-            return _dbSet.Contains(entity);
+            return new RepositoryResult { Succeded = true };
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return false;
+            return new RepositoryResult { Succeded = false };
         }
     }
 }
