@@ -2,7 +2,7 @@
 
 public class RepositoryResult
 {
-    public bool Succeded { get; set; }
+    public bool Succeeded { get; set; }
     public int? StatusCode { get; set; }
     public string? Message { get; set; }
 }
