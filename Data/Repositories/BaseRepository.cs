@@ -33,26 +33,30 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         _cacheKey_All = $"${typeof(TEntity).Name}_All";
     }
 
-    public virtual async Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> expression)
+    public virtual async Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> findBy)
     {
-        return new RepositoryResult { Succeded = await _dbSet.AnyAsync(expression) };
+        var result = await _dbSet.AnyAsync(findBy);
+        return result
+            ? new RepositoryResult { Succeeded = true, StatusCode = 200 }
+            : new RepositoryResult { Succeeded = false, StatusCode = 404 };
+
     }
 
     public virtual async Task<RepositoryResult> AddAsync(TEntity entity)
     {
         if (entity == null)
-            return new RepositoryResult { Succeded = false };
+            return new RepositoryResult { Succeeded = false, StatusCode = 400 };
 
         try
         {
             _dbSet.Add(entity);
             await _context.SaveChangesAsync();
-            return new RepositoryResult { Succeded = true };
+            return new RepositoryResult { Succeeded = true, StatusCode = 201 };
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return new RepositoryResult { Succeded = false };
+            return new RepositoryResult { Succeeded = false, StatusCode = 500, Message = ex.Message };
         }
     }
 
@@ -60,18 +64,18 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
     {
         var entity = await _dbSet.FirstOrDefaultAsync(expression);
         if (entity == default)
-            return new RepositoryResult { Succeded = false };
+            return new RepositoryResult { Succeeded = false, StatusCode = 400 };
 
         try
         {
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
-            return new RepositoryResult { Succeded = await _dbSet.AnyAsync(expression) };
+            return new RepositoryResult { Succeeded = true, StatusCode = 200 };
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return new RepositoryResult { Succeded = false };
+            return new RepositoryResult { Succeeded = false, StatusCode = 500, Message = ex.Message };
         }
     }
 
@@ -94,7 +98,7 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
 
         var entities = await query.ToListAsync();
         var models = entities.Select(e => MappingExtensions.MapTo<TModel>(e));
-        return new RepositoryResult<IEnumerable<TModel>> { Succeded = true, Result = models };
+        return new RepositoryResult<IEnumerable<TModel>> { Succeeded = true, StatusCode = 200, Result = models };
     }
 
     public virtual async Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes)
@@ -109,27 +113,27 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
 
         var entity = await query.FirstOrDefaultAsync(findBy);
         if (entity == null)
-            return new RepositoryResult<TModel> { Succeded = false };
+            return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 404 };
 
         var model = MappingExtensions.MapTo<TModel>(entity);
-        return new RepositoryResult<TModel> { Succeded = true, Result = model };
+        return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 200, Result = model };
     }
 
     public virtual async Task<RepositoryResult> UpdateAsync(TEntity entity)
     {
         if (entity == null)
-            return new RepositoryResult { Succeded = false };
+            return new RepositoryResult { Succeeded = false, StatusCode = 400 };
 
         try
         {
             _dbSet.Update(entity);
             await _context.SaveChangesAsync();
-            return new RepositoryResult { Succeded = true };
+            return new RepositoryResult { Succeeded = true, StatusCode = 200 };
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return new RepositoryResult { Succeded = false };
+            return new RepositoryResult { Succeeded = false, StatusCode = 500, Message = ex.Message };
         }
     }
 }
