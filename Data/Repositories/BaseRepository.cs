@@ -2,6 +2,7 @@
 using Domain.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -21,11 +22,15 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
 {
     protected readonly DataContext _context;
     protected readonly DbSet<TEntity> _dbSet;
+    protected readonly IMemoryCache _cache;
+    protected string _cacheKey_All;
 
-    protected BaseRepository(DataContext context)
+    protected BaseRepository(DataContext context, IMemoryCache cache)
     {
         _context = context;
         _dbSet = _context.Set<TEntity>();
+        _cache = cache;
+        _cacheKey_All = $"${typeof(TEntity).Name}_All";
     }
 
     public virtual async Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> expression)
