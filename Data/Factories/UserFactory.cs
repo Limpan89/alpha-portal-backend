@@ -16,6 +16,7 @@ public static class UserFactory
             FirstName = entity.Profile?.FirstName,
             LastName = entity.Profile?.LastName,
             Phone = entity.Profile?.Phone,
+            JobTitle = entity.Profile?.JobTitle,
             Image = entity.Profile?.Image,
 
             StreetAddress = entity.Address?.StreetAddress,
@@ -39,6 +40,7 @@ public static class UserFactory
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Phone = model.Phone,
+                JobTitle = model.JobTitle,
                 Image = model.Image
             },
 
