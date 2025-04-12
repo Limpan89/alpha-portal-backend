@@ -9,6 +9,7 @@ public class ProjectModel
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime Created { get; set; }
+    public decimal? Budget { get; set; }
     public ClientModel Client { get; set; } = null!;
     public UserModel Owner { get; set; } = null!;
     public StatusModel Status { get; set; } = null!;
