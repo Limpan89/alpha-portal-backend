@@ -167,7 +167,6 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         string filterFragment = filterBy != null ? $"_{filterBy.ToString()}" : "";
         string includeFragment = includes != null && includes.Length != 0 ? string.Join("_", includes.Select(i => i.ToString())) : "";
         return $"{typeof(TEntity).Name}_All{orderFragment}{sortFragment}{filterFragment}_{includeFragment}";
-
     }
 
     public void ClearCache()
