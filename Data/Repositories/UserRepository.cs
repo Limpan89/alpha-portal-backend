@@ -29,11 +29,6 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
             if (!result.Succeeded)
                 throw new Exception("Failed to create User.");
 
-            if (users < 1)
-                await _userManager.AddToRoleAsync(entity, "Admin");
-            else
-                await _userManager.AddToRoleAsync(entity, "User");
-
             ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 201 };
         }
