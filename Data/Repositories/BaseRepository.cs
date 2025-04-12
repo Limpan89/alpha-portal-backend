@@ -122,7 +122,7 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
             query = orderByDescending ? query.OrderByDescending(sortBy) : query.OrderBy(sortBy);
 
         var entities = await query.ToListAsync();
-        models = entities.Select(e => MappingExtensions.MapTo<TModel>(e));
+        models = entities.Select(e => e.MapTo<TModel>());
         AddToCache<IEnumerable<TModel>>(cacheKey, models);
 
         return new RepositoryResult<IEnumerable<TModel>> { Succeeded = true, StatusCode = 200, Result = models };
@@ -147,7 +147,7 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         if (entity == null)
             return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 404 };
 
-        model = MappingExtensions.MapTo<TModel>(entity);
+        model = entity.MapTo<TModel>();
         AddToCache<TModel>(cacheKey, model);
 
         return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 200, Result = model! };
