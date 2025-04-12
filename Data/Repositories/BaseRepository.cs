@@ -9,12 +9,12 @@ namespace Data.Repositories;
 
 public interface IBaseRepository<TEntity, TModel> where TEntity : class
 {
-    Task<RepositoryResult> AddAsync(TEntity entity);
-    Task<RepositoryResult> DeleteAsync(Expression<Func<TEntity, bool>> expression);
-    Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> expression);
-    Task<RepositoryResult<IEnumerable<TModel>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null, Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes);
-    Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes);
-    Task<RepositoryResult> UpdateAsync(TEntity entity);
+    public Task<RepositoryResult> AddAsync(TEntity entity);
+    public Task<RepositoryResult> DeleteAsync(Expression<Func<TEntity, bool>> expression);
+    public Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> expression);
+    public Task<RepositoryResult<IEnumerable<TModel>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortBy = null, Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes);
+    public Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes);
+    public Task<RepositoryResult> UpdateAsync(TEntity entity);
 }
 
 public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity, TModel> where TEntity : class
