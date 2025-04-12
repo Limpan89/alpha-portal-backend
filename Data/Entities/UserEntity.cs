@@ -4,6 +4,8 @@ namespace Data.Entities;
 
 public class UserEntity : IdentityUser
 {
-    public UserProfileEntity? Profile { get; set; }
-    public UserAddressEntity? Address { get; set; }
+    public virtual UserProfileEntity? Profile { get; set; }
+    public virtual UserAddressEntity? Address { get; set; }
+
+    public virtual ICollection<ProjectEntity> Projects { get; set; } = [];
 }
