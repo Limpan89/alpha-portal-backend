@@ -4,13 +4,12 @@ using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace Data.Repositories;
 
 public interface IUserRepository : IBaseRepository<UserEntity, UserModel>
 {
-
+    public Task<RepositoryResult> AddAsync(UserEntity entity, string password);
 }
 
 public class UserRepository(DataContext context, IMemoryCache cache, UserManager<UserEntity> userManager) : BaseRepository<UserEntity, UserModel>(context, cache), IUserRepository
@@ -37,8 +36,6 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
 
             ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 201 };
-
-
         }
         catch (Exception ex)
         {
