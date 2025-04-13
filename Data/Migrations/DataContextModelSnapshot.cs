@@ -28,6 +28,7 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("BillingAddress")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BillingReference")
@@ -57,12 +58,14 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -95,7 +98,7 @@ namespace Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<decimal?>("Budget")
+                    b.Property<decimal>("Budget")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ClientId")
@@ -115,6 +118,7 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProjectName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDate")
@@ -247,6 +251,7 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
@@ -256,6 +261,7 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -402,8 +408,8 @@ namespace Data.Migrations
             modelBuilder.Entity("Data.Entities.ClientBillingEntity", b =>
                 {
                     b.HasOne("Data.Entities.ClientEntity", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
+                        .WithOne("Billing")
+                        .HasForeignKey("Data.Entities.ClientBillingEntity", "ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -528,6 +534,8 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Entities.ClientEntity", b =>
                 {
+                    b.Navigation("Billing");
+
                     b.Navigation("Projects");
                 });
 
