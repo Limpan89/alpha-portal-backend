@@ -8,6 +8,8 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
 {
     public DbSet<UserProfileEntity> UserProfiles { get; set; }
     public DbSet<UserAddressEntity> UserAddresses { get; set; }
+    public DbSet<ClientBillingEntity> ClientBillings { get; set; }
+    public DbSet<PostalAddressEntity> PostalAddresses { get; set; }
     public DbSet<ProjectEntity> Projects { get; set; }
     public DbSet<StatusEntity> Status { get; set; }
     public DbSet<ClientEntity> Clients { get; set; }
