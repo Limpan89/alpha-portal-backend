@@ -11,6 +11,8 @@ public class UserAddressEntity
     public string UserId { get; set; } = null!;
     public UserEntity User { get; set; } = null!;
     public string? StreetAddress { get; set; }
-    public string? CityName { get; set; }
-    public string? PostalCode { get; set; }
+
+    [ForeignKey(nameof(PostalAddress))]
+    public int PostalCode { get; set; }
+    public virtual PostalAddressEntity PostalAddress { get; set; } = null!;
 }
