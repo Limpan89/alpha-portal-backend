@@ -5,6 +5,6 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Data.Repositories;
 
-public interface IStatusRepository : IBaseRepository<StatusModel, StatusEntity> { }
+public interface IStatusRepository : IBaseRepository<StatusEntity, StatusModel> { }
 
-public class StatusRepository(DataContext context, IMemoryCache cache) : BaseRepository<StatusModel, StatusEntity>(context, cache), IStatusRepository { }
+public class StatusRepository(DataContext context, IMemoryCache cache) : BaseRepository<StatusEntity, StatusModel>(context, cache), IStatusRepository { }

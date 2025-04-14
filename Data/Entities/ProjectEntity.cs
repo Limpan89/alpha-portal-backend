@@ -7,7 +7,7 @@ public class ProjectEntity
 {
     [Key]
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string? ProjectName { get; set; }
+    public string ProjectName { get; set; } = null!;
     public string? Description { get; set; }
     public string? Image { get; set; }
 
@@ -21,7 +21,7 @@ public class ProjectEntity
     public DateTime Created { get; set; } = DateTime.Now;
 
     [Column(TypeName = "decimal(18,2)")]
-    public decimal? Budget { get; set; }
+    public decimal Budget { get; set; }
 
     [ForeignKey(nameof(Client))]
     public string ClientId { get; set; } = null!;

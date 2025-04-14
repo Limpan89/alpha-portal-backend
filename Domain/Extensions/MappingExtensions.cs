@@ -17,7 +17,7 @@ public static class MappingExtensions
         {
             var sp = sourceProps.FirstOrDefault(p => p.Name == dp.Name && p.PropertyType == dp.PropertyType);
 
-            if (sp != null)
+            if (sp != null && dp.CanWrite)
             {
                 var value = sp.GetValue(source);
                 dp.SetValue(dest, value);
