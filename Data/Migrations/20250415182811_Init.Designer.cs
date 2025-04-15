@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250413204801_ManySmallFixes")]
-    partial class ManySmallFixes
+    [Migration("20250415182811_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -82,10 +82,7 @@ namespace Data.Migrations
             modelBuilder.Entity("Data.Entities.PostalAddressEntity", b =>
                 {
                     b.Property<int>("PostalCode")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PostalCode"));
 
                     b.Property<string>("CityName")
                         .IsRequired()
@@ -170,7 +167,7 @@ namespace Data.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("PostalCode")
+                    b.Property<int?>("PostalCode")
                         .HasColumnType("int");
 
                     b.Property<string>("StreetAddress")
@@ -458,9 +455,7 @@ namespace Data.Migrations
                 {
                     b.HasOne("Data.Entities.PostalAddressEntity", "PostalAddress")
                         .WithMany("Users")
-                        .HasForeignKey("PostalCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PostalCode");
 
                     b.HasOne("Data.Entities.UserEntity", "User")
                         .WithOne("Address")

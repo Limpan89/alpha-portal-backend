@@ -56,11 +56,25 @@ namespace Data.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ClientName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Clients", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostalAddresses",
+                columns: table => new
+                {
+                    PostalCode = table.Column<int>(type: "int", nullable: false),
+                    CityName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostalAddresses", x => x.PostalCode);
                 });
 
             migrationBuilder.CreateTable(
@@ -183,32 +197,12 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserAddresses",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    StreetAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CityName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PostalCode = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserAddresses", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_UserAddresses_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserProfiles",
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     JobTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -225,17 +219,67 @@ namespace Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ClientBillings",
+                columns: table => new
+                {
+                    ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    BillingAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BillingReference = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PostalCode = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientBillings", x => x.ClientId);
+                    table.ForeignKey(
+                        name: "FK_ClientBillings_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ClientBillings_PostalAddresses_PostalCode",
+                        column: x => x.PostalCode,
+                        principalTable: "PostalAddresses",
+                        principalColumn: "PostalCode",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserAddresses",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StreetAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PostalCode = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserAddresses", x => x.UserId);
+                    table.ForeignKey(
+                        name: "FK_UserAddresses_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserAddresses_PostalAddresses_PostalCode",
+                        column: x => x.PostalCode,
+                        principalTable: "PostalAddresses",
+                        principalColumn: "PostalCode");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Projects",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProjectName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProjectName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartDate = table.Column<DateTime>(type: "date", nullable: false),
                     EndDate = table.Column<DateTime>(type: "date", nullable: false),
                     Created = table.Column<DateTime>(type: "Date", nullable: false),
-                    Budget = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Budget = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ClientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StatusId = table.Column<int>(type: "int", nullable: false)
@@ -303,6 +347,17 @@ namespace Data.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ClientBillings_BillingReference",
+                table: "ClientBillings",
+                column: "BillingReference",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ClientBillings_PostalCode",
+                table: "ClientBillings",
+                column: "PostalCode");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Clients_ClientName",
                 table: "Clients",
                 column: "ClientName",
@@ -328,6 +383,11 @@ namespace Data.Migrations
                 table: "Status",
                 column: "StatusName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAddresses_PostalCode",
+                table: "UserAddresses",
+                column: "PostalCode");
         }
 
         /// <inheritdoc />
@@ -349,6 +409,9 @@ namespace Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ClientBillings");
+
+            migrationBuilder.DropTable(
                 name: "Projects");
 
             migrationBuilder.DropTable(
@@ -365,6 +428,9 @@ namespace Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Status");
+
+            migrationBuilder.DropTable(
+                name: "PostalAddresses");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
