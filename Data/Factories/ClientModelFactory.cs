@@ -4,7 +4,7 @@ using Domain.Models;
 
 namespace Data.Factories;
 
-interface IClientModelFactory : IModelFactory<ClientEntity, ClientModel> { }
+public interface IClientModelFactory : IModelFactory<ClientEntity, ClientModel> { }
 
 public class ClientModelFactory : IClientModelFactory
 {
