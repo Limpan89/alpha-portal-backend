@@ -10,6 +10,6 @@ public class UserModel
     public string? JobTitle { get; set; }
     public string? Image { get; set; }
     public string? StreetAddress { get; set; }
-    public string? Role { get; set; } = null;
+    public string? Role { get; set; }
     public PostalAddressModel? PostalAddress { get; set; }
 }
