@@ -36,7 +36,9 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex.Message);
+            Debug.WriteLine("Exception: " + ex.Message);
+            if (ex.InnerException != null)
+                Debug.WriteLine("InnerException: " + ex.InnerException);
             return new RepositoryResult { Succeeded = false, StatusCode = 500, Message = ex.Message };
         }
     }
@@ -58,7 +60,9 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex.Message);
+            Debug.WriteLine("Exception: " + ex.Message);
+            if (ex.InnerException != null)
+                Debug.WriteLine("InnerException: " + ex.InnerException);
             return new RepositoryResult { Succeeded = false, StatusCode = 500, Message = ex.Message };
         }
     }
@@ -80,7 +84,9 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex.Message);
+            Debug.WriteLine("Exception: " + ex.Message);
+            if (ex.InnerException != null)
+                Debug.WriteLine("InnerException: " + ex.InnerException);
             return new RepositoryResult { Succeeded = false, StatusCode = 500, Message = ex.Message };
         }
     }
@@ -103,7 +109,9 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex.Message);
+            Debug.WriteLine("Exception: " + ex.Message);
+            if (ex.InnerException != null)
+                Debug.WriteLine("InnerException: " + ex.InnerException);
             return new RepositoryResult { Succeeded = false, StatusCode = 500, Message = ex.Message };
         }
     }
