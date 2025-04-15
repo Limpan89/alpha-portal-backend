@@ -24,13 +24,13 @@ namespace Business.Services
 
         public async Task<ServiceResult<IEnumerable<ClientModel>>> GetClientsAsync()
         {
-            var result = await _clientRepo.GetAllAsync(orderByDesc: false, sortBy: c => c.ClientName, filterBy: null, i => i.Billing!.PostalAddress);
+            var result = await _clientRepo.GetAllAsync(orderByDesc: false, sortBy: c => c.ClientName, filterBy: null, i => i.Billing, i => i.Billing.PostalAddress);
             return result.MapTo<ServiceResult<IEnumerable<ClientModel>>>();
         }
 
         public async Task<ServiceResult<ClientModel>> GetClientByIdAsync(string clientId)
         {
-            var result = await _clientRepo.GetAsync(c => c.Id == clientId, i => i.Billing!.PostalAddress);
+            var result = await _clientRepo.GetAsync(c => c.Id == clientId, i => i.Billing, i => i.Billing!.PostalAddress);
             return result.MapTo<ServiceResult<ClientModel>>();
         }
 
@@ -38,12 +38,9 @@ namespace Business.Services
         {
             if (form == null)
                 return new ServiceResult { Succeeded = false, StatusCode = 400 };
-            var any = await _postalService.AnyPostalAddressAsync(form.PostalCode);
+            await _postalService.AddPostalAddressAsync(new PostalAddressEntity { PostalCode = form.PostalCode, CityName = form.CityName });
+
             var entity = _clientFactory.MapModelToEntity(form);
-
-            if (!any.Succeeded)
-                entity.Billing.PostalAddress = new PostalAddressEntity { PostalCode = form.PostalCode, CityName = form.CityName };
-
             var result = await _clientRepo.AddAsync(entity);
             return result.MapTo<ServiceResult>();
         }
@@ -52,12 +49,9 @@ namespace Business.Services
         {
             if (form == null)
                 return new ServiceResult { Succeeded = false, StatusCode = 400 };
-            var any = await _postalService.AnyPostalAddressAsync(form.PostalCode);
+            await _postalService.AddPostalAddressAsync(new PostalAddressEntity { PostalCode = form.PostalCode, CityName = form.CityName });
+            
             var entity = _clientFactory.MapModelToEntity(form);
-
-            if (!any.Succeeded)
-                entity.Billing.PostalAddress = new PostalAddressEntity { PostalCode = form.PostalCode, CityName = form.CityName };
-
             var result = await _clientRepo.UpdateAsync(entity);
             return result.MapTo<ServiceResult>();
         }
