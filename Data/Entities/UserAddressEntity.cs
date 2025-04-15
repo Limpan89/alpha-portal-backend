@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-// Create Seperate Entity for PostalAdress (Normalization n' stuff)
-
 namespace Data.Entities;
 
 public class UserAddressEntity
@@ -13,6 +11,6 @@ public class UserAddressEntity
     public string? StreetAddress { get; set; }
 
     [ForeignKey(nameof(PostalAddress))]
-    public int PostalCode { get; set; }
-    public virtual PostalAddressEntity PostalAddress { get; set; } = null!;
+    public int? PostalCode { get; set; }
+    public virtual PostalAddressEntity? PostalAddress { get; set; }
 }
