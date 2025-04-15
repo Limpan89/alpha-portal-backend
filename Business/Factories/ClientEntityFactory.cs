@@ -4,7 +4,12 @@ using Domain.Models;
 
 namespace Business.Factories;
 
-public interface IClientEntityFactory : IEntityFactory<ClientEntity, ClientModel, AddClientFormDto, EditClientFormDto> { }
+public interface IClientEntityFactory
+{
+    ClientEntity MapModelToEntity(AddClientFormDto form);
+    ClientEntity MapModelToEntity(ClientModel model);
+    ClientEntity MapModelToEntity(EditClientFormDto form);
+}
 
 public class ClientEntityFactory : IClientEntityFactory
 {
