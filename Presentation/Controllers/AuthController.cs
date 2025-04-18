@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
+    [Produces("application/json")]
+    [Consumes("application/json")]
+
     [ApiController]
     public class AuthController(IAuthService authService) : ControllerBase
     {
@@ -18,26 +21,19 @@ namespace Presentation.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (ModelState.IsValid)
-            {
+
                 var result = await _authService.SignInAsync(form.MapTo<SignInFormDto>());
-                if (result.Succeeded)
-                    return Ok(new { token = result.Result });
-            }
-            return Unauthorized(new { error = "Invalid email or password." });
+                return result.Succeeded ? Ok(result.Result) : NotFound();
         }
 
         [HttpPost("signup")]
         public async Task<IActionResult> SingUp(SignUpFormViewModel form)
         {
-            if (ModelState.IsValid)
-            {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
                 var result = await _authService.SignUpAsync(form.MapTo<SignUpFormDto>());
-                if (result.Succeeded)
-                    return Ok(new { message = "User Created" });
-                return Unauthorized(new { error = "Invalid signup form.", status = result.StatusCode });
-            }
-            return Unauthorized(new { error = "Invalid signup form." });
+                return result.Succeeded ? Created() : BadRequest();
         }
     }
 }

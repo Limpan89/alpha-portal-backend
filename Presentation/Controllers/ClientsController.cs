@@ -2,71 +2,70 @@
 using Business.Services;
 using Domain.Extensions;
 using Domain.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
+    [Produces("application/json")]
     [ApiController]
     public class ClientsController(IClientService clientService) : ControllerBase
     {
         private readonly IClientService _clientService = clientService;
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var result = await _clientService.GetClientsAsync();
-            if (result.Succeeded)
-                return Ok(result.Result);
-            return
-                Unauthorized(new { Errror = "Failed to get Clients" });
+            return result.Succeeded ? Ok(result.Result) : NotFound();
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> Get(string id)
         {
             var result = await _clientService.GetClientByIdAsync(id);
-            if (result.Succeeded)
-                return Ok(result.Result);
-            return
-                Unauthorized(new { Errror = "Failed to get Client" });
+            return result.Succeeded ? Ok(result.Result) : NotFound();
         }
 
         [HttpPost]
+        [Authorize]
+        [Consumes("multipart/form")]
+        [SwaggerOperation(Summary = "Create new Client")]
         public async Task<IActionResult> AddProject(AddClientFormViewModel form)
         {
             if (ModelState.IsValid)
             {
                 var result = await _clientService.AddClientAsync(form.MapTo<AddClientFormDto>());
-                if (result.Succeeded)
-                    return Ok(result);
+                return result.Succeeded ? Created() : BadRequest();
             }
             return
-                Unauthorized(new { Errror = "Failed to add Client" });
+                Unauthorized();
         }
 
         [HttpPut]
+        [Authorize]
+        [Consumes("multipart/form")]
         public async Task<IActionResult> UpdateProject(EditClientFormViewModel form)
         {
             if (ModelState.IsValid)
             {
                 var result = await _clientService.UpdateClientAsync(form.MapTo<EditClientFormDto>());
-                if (result.Succeeded)
-                    return Ok(result);
+                return result.Succeeded ? Ok() : BadRequest();
             }
             return
-                Unauthorized(new { Errror = "Failed to update Client" });
+                Unauthorized();
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> RemoveProject(string id)
         {
             var result = await _clientService.DeleteClientAsync(id);
-            if (result.Succeeded)
-                return Ok(result);
-            return
-                Unauthorized(new { Errror = "Failed to remove Client" });
+            return result.Succeeded ? Ok() : BadRequest();
         }
     }
 }
