@@ -12,8 +12,7 @@ public class AddProjectFormViewModel
     [DataType(DataType.Text)]
     public string? Description { get; set; }
 
-    [DataType(DataType.ImageUrl)]
-    public string? Image { get; set; }
+    public IFormFile? NewImage { get; set; }
 
     [Required]
     [DataType(DataType.DateTime)]

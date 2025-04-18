@@ -17,8 +17,7 @@ public class AddClientFormViewModel
     [DataType(DataType.PhoneNumber)]
     public string? Phone { get; set; }
 
-    [DataType(DataType.ImageUrl)]
-    public string? Image { get; set; }
+    public IFormFile? NewImage { get; set; }
 
     [Required]
     [DataType(DataType.Text)]

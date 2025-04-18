@@ -25,8 +25,7 @@ public class AddUserFormViewModel
     [DataType(DataType.Text)]
     public string JobTitle { get; set; } = null!;
 
-    [DataType(DataType.ImageUrl)]
-    public string? Image { get; set; }
+    public IFormFile? NewImage { get; set; }
 
     [Required]
     [DataType(DataType.Text)]
