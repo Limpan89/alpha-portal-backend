@@ -11,8 +11,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Presentation;
 
@@ -25,9 +26,51 @@ public class Program
         builder.Services.AddOpenApi();
         builder.Services.AddMemoryCache();
 
+        builder.Services.AddSwaggerGen(o =>
+        {
+            o.EnableAnnotations();
+            o.ExampleFilters();
+            o.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v 1.0",
+                Title = "Alpha Portal API Documenatation",
+                Description = "Standard documentation for Alpha Portal API."
+            });
+            var apiAdminScheme = new OpenApiSecurityScheme
+            {
+                Name = "X-ADM-API-KEY",
+                Description = "Admin Api-Key Required",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "ApiKeyScheme",
+                Reference = new OpenApiReference
+                {
+                    Id = "AdminApiKey",
+                    Type = ReferenceType.SecurityScheme
+                }
+            };
+            o.AddSecurityDefinition("AdminApiKey", apiAdminScheme);
+            o.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                { apiAdminScheme, new List<string>() }
+            });
+        });
+
+        builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
+
         builder.Services.AddDbContext<DataContext>(e => e.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
         builder.Services.AddIdentity<UserEntity, IdentityRole>().AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
-        builder.Services.AddTransient<JwtTokenHandler>();
+
+        /*
+        var blobConnString = builder.Configuration.GetConnectionString("AzureBlobStorage")!;
+        var containerName = "images";
+        builder.Services.AddScoped<IFilehandler>(_ => new AzureFileHandler(blobConnString, containerName));
+        */
+
+        var localFilePath = Path.Combine(builder.Environment.WebRootPath, "images");
+        builder.Services.AddScoped(_ => new ImageHandler(localFilePath));
+
+        builder.Services.AddScoped(typeof(ICacheHandler<>), typeof(CacheHandler<>));
 
         builder.Services.AddScoped<IClientEntityFactory, ClientEntityFactory>();
         builder.Services.AddScoped<IUserEntityFactory, UserEntityFactory>();
@@ -47,14 +90,14 @@ public class Program
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IPostalAddressService, PostalAddressService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
-        
-        //chatgpt
+
+        builder.Services.AddTransient<JwtTokenHandler>();
+
         builder.Services.Configure<IdentityOptions>(options =>
         {
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
             options.User.RequireUniqueEmail = true;
-        });
-        //end
+        }); // Allows email to be used as username
 
         builder.Services.AddAuthentication(x =>
         {
@@ -65,8 +108,9 @@ public class Program
         {
             var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!);
             var issuer = builder.Configuration["Jwt:Issuer"]!;
+            var audience = builder.Configuration["Jwt:Audience"]!;
 
-            x.RequireHttpsMetadata = false; // Change
+            x.RequireHttpsMetadata = false; // Change on deploy
             x.SaveToken = true;
             x.TokenValidationParameters = new TokenValidationParameters
             {
@@ -77,6 +121,8 @@ public class Program
                 ClockSkew = TimeSpan.FromMinutes(5),
                 ValidateIssuer = true,
                 ValidIssuer = issuer,
+                ValidateAudience = true,
+                ValidAudience = audience
             };
         });
 
@@ -88,10 +134,19 @@ public class Program
 
         app.UseHttpsRedirection();
 
+        app.MapStaticAssets(); // local images
+
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
+        app.UseSwagger();
+        app.UseSwaggerUI(o =>
+        {
+            o.SwaggerEndpoint("/swagger/v1/swagger.json", "Alpha Portal API");
+            o.RoutePrefix = string.Empty;
+        });
+
+        app.MapControllers().WithStaticAssets(); // local images
         app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
         app.Run();

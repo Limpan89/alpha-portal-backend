@@ -1,4 +1,5 @@
 ﻿using Business.Factories;
+using Business.Handlers;
 using Business.Models;
 using Data.Entities;
 using Data.Repositories;
@@ -21,13 +22,15 @@ public interface IUserService
     Task<ServiceResult<string>> GetUserRoleAsync(string userId);
 }
 
-public class UserService(IUserRepository userRepo, UserManager<UserEntity> userManager, RoleManager<IdentityRole> roleManger, IPostalAddressService postalService) : IUserService
+public class UserService(IUserRepository userRepo, UserManager<UserEntity> userManager, RoleManager<IdentityRole> roleManger, IPostalAddressService postalService, ICacheHandler<IEnumerable<UserModel>> userCache, ICacheHandler<IEnumerable<IdentityRole>> roleCache) : IUserService
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly UserManager<UserEntity> _userManager = userManager;
     private readonly RoleManager<IdentityRole> _roleManger = roleManger;
     private readonly IPostalAddressService _postalService = postalService;
     private readonly IUserEntityFactory _userFactory = new UserEntityFactory();
+    private readonly ICacheHandler<IEnumerable<UserModel>> _userCache = userCache;
+    private readonly ICacheHandler<IEnumerable<IdentityRole>> _roleCache = roleCache;
 
     public async Task<ServiceResult<UserModel>> GetUserByIdAsync(string userId)
     {

@@ -29,7 +29,7 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
             var result = await _userManager.CreateAsync(entity, password);
 
             if (!result.Succeeded)
-                throw new Exception("Failed to create User.");
+                throw new Exception("Failed to sign up User.");
 
             ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 201 };
