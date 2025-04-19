@@ -4,10 +4,12 @@ using Domain.Extensions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Extensions.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -16,7 +18,6 @@ namespace Presentation.Controllers
         private readonly IClientService _clientService = clientService;
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var result = await _clientService.GetClientsAsync();
@@ -24,7 +25,6 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<IActionResult> Get(string id)
         {
             var result = await _clientService.GetClientByIdAsync(id);
@@ -32,7 +32,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [UseAdminApiKey]
         [Consumes("multipart/form")]
         [SwaggerOperation(Summary = "Create new Client")]
         public async Task<IActionResult> AddProject(AddClientFormViewModel form)
@@ -47,7 +47,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut]
-        [Authorize]
+        [UseAdminApiKey]
         [Consumes("multipart/form")]
         public async Task<IActionResult> UpdateProject(EditClientFormViewModel form)
         {
@@ -61,7 +61,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [UseAdminApiKey]
         public async Task<IActionResult> RemoveProject(string id)
         {
             var result = await _clientService.DeleteClientAsync(id);

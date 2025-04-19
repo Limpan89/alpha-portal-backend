@@ -5,6 +5,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Extensions.Attributes;
 
 namespace Presentation.Controllers
 {
@@ -31,6 +32,7 @@ namespace Presentation.Controllers
 
         [HttpPost]
         [Authorize]
+        [UseAdminApiKey]
         [Consumes("multipart/form")]
         public async Task<IActionResult> AddProject(AddProjectFormViewModel form)
         {
@@ -45,6 +47,7 @@ namespace Presentation.Controllers
 
         [HttpPut]
         [Authorize]
+        [UseAdminApiKey]
         [Consumes("multipart/form")]
         public async Task<IActionResult> UpdateProject(EditProjectFormViewModel form)
         {
@@ -59,6 +62,7 @@ namespace Presentation.Controllers
 
         [HttpDelete("{id}")]
         [Authorize]
+        [UseAdminApiKey]
         public async Task<IActionResult> RemoveProject(string id)
         {
             var result = await _projectService.DeleteProjectAsync(id);

@@ -5,9 +5,11 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Extensions.Attributes;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -16,7 +18,6 @@ namespace Presentation.Controllers
         private readonly IUserService _userService = userService;
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var result = await _userService.GetAllUsersAsync();
@@ -24,7 +25,6 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<IActionResult> Get(string id)
         {
             var result = await _userService.GetUserByIdAsync(id);
@@ -32,7 +32,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [UseAdminApiKey]
         [Consumes("multipart/form")]
         public async Task<IActionResult> AddUser(AddUserFormViewModel form)
         {
@@ -46,7 +46,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut]
-        [Authorize]
+        [UseAdminApiKey]
         [Consumes("multipart/form")]
         public async Task<IActionResult> UpdateProject(EditUserFormViewModel form)
         {
@@ -60,7 +60,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [UseAdminApiKey]
         public async Task<IActionResult> RemoveProject(string id)
         {
             var result = await _userService.DeleteUserAsync(id);
