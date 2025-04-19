@@ -61,14 +61,14 @@ public class Program
         builder.Services.AddDbContext<DataContext>(e => e.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
         builder.Services.AddIdentity<UserEntity, IdentityRole>().AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
 
-        /*
         var blobConnString = builder.Configuration.GetConnectionString("AzureBlobStorage")!;
         var containerName = "images";
-        builder.Services.AddScoped<IFilehandler>(_ => new AzureFileHandler(blobConnString, containerName));
-        */
+        builder.Services.AddScoped<IFileHandler>(_ => new AzureFileHandler(blobConnString, containerName));
 
+        /*
         var localFilePath = Path.Combine(builder.Environment.WebRootPath, "images");
         builder.Services.AddScoped(_ => new ImageHandler(localFilePath));
+        */
 
         builder.Services.AddScoped(typeof(ICacheHandler<>), typeof(CacheHandler<>));
 
@@ -128,13 +128,13 @@ public class Program
 
         var app = builder.Build();
 
-        await SeedData.SetRolesAsync(app);
+        //await SeedData.SetRolesAsync(app);
 
         app.MapOpenApi();
 
         app.UseHttpsRedirection();
 
-        app.MapStaticAssets(); // local images
+        //app.MapStaticAssets();
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -146,7 +146,9 @@ public class Program
             o.RoutePrefix = string.Empty;
         });
 
-        app.MapControllers().WithStaticAssets(); // local images
+        //app.MapControllers().WithStaticAssets();
+
+        app.MapControllers();
         app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
         app.Run();
