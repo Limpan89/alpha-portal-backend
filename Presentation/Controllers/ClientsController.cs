@@ -33,7 +33,7 @@ namespace Presentation.Controllers
 
         [HttpPost]
         [UseAdminApiKey]
-        [Consumes("multipart/form")]
+        [Consumes("multipart/form-data")]
         [SwaggerOperation(Summary = "Create new Client")]
         public async Task<IActionResult> AddProject(AddClientFormViewModel form)
         {
@@ -48,7 +48,7 @@ namespace Presentation.Controllers
 
         [HttpPut]
         [UseAdminApiKey]
-        [Consumes("multipart/form")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateProject(EditClientFormViewModel form)
         {
             if (ModelState.IsValid)

@@ -33,7 +33,7 @@ namespace Presentation.Controllers
 
         [HttpPost]
         [UseAdminApiKey]
-        [Consumes("multipart/form")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddUser(AddUserFormViewModel form)
         {
             if (ModelState.IsValid)
@@ -47,7 +47,7 @@ namespace Presentation.Controllers
 
         [HttpPut]
         [UseAdminApiKey]
-        [Consumes("multipart/form")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateProject(EditUserFormViewModel form)
         {
             if (ModelState.IsValid)

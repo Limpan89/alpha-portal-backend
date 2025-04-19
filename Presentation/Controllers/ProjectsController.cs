@@ -9,6 +9,7 @@ using Presentation.Extensions.Attributes;
 
 namespace Presentation.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -31,9 +32,8 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         [UseAdminApiKey]
-        [Consumes("multipart/form")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddProject(AddProjectFormViewModel form)
         {
             if (ModelState.IsValid)
@@ -46,9 +46,8 @@ namespace Presentation.Controllers
         }
 
         [HttpPut]
-        [Authorize]
         [UseAdminApiKey]
-        [Consumes("multipart/form")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateProject(EditProjectFormViewModel form)
         {
             if (ModelState.IsValid)
@@ -61,7 +60,6 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
         [UseAdminApiKey]
         public async Task<IActionResult> RemoveProject(string id)
         {
