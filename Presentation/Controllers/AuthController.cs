@@ -23,7 +23,15 @@ namespace Presentation.Controllers
 
 
                 var result = await _authService.SignInAsync(form.MapTo<SignInFormDto>());
-                return result.Succeeded ? Ok(result.Result) : NotFound();
+                return result.Succeeded
+                ? Ok(new
+                { 
+                    token = result.Token,
+                    isAdmin = result.IsAdmin,
+                    apiKey = result.ApiKey,
+                    userId = result.UserId 
+                }) 
+                : NotFound();
         }
 
         [HttpPost("signup")]

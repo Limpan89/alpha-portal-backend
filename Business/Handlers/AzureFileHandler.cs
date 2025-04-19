@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Business.Handlers;
 
-public interface IFilehandler
+public interface IFileHandler
 {
     Task<string> UploadFileAsync(IFormFile file);
 }
 
-public class AzureFileHandler(string connString, string continerName) : IFilehandler
+public class AzureFileHandler(string connString, string continerName) : IFileHandler
 {
     private readonly BlobContainerClient _containerClient = new BlobContainerClient(connString, continerName);
 

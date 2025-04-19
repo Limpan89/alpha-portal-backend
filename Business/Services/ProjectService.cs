@@ -1,4 +1,5 @@
-﻿using Business.Models;
+﻿using Business.Handlers;
+using Business.Models;
 using Data.Entities;
 using Data.Repositories;
 using Domain.Extensions;
@@ -15,10 +16,11 @@ public interface IProjectService
     Task<ServiceResult> UpdateProjectAsync(EditProjectFormDto form);
 }
 
-public class ProjectService(IProjectRepository projectRepo, IStatusService statusService) : IProjectService
+public class ProjectService(IProjectRepository projectRepo, IStatusService statusService, IFileHandler fileHandler) : IProjectService
 {
     private readonly IProjectRepository _projectRepo = projectRepo;
     private readonly IStatusService _statusService = statusService;
+    private readonly IFileHandler _fileHandler = fileHandler;
 
     public async Task<ServiceResult<IEnumerable<ProjectModel>>> GetAllProjectsAsync()
     {
@@ -44,6 +46,8 @@ public class ProjectService(IProjectRepository projectRepo, IStatusService statu
             return new ServiceResult { Succeeded = false, StatusCode = 400 };
 
         var entity = form.MapTo<ProjectEntity>();
+        if (form.NewImage != null)
+            entity.Image = await _fileHandler.UploadFileAsync(form.NewImage);
 
         var statusResult = await _statusService.GetStatusByNameAsync("Started");
         if (statusResult.Succeeded)
@@ -59,6 +63,12 @@ public class ProjectService(IProjectRepository projectRepo, IStatusService statu
             return new ServiceResult { Succeeded = false, StatusCode = 400 };
 
         var entity = form.MapTo<ProjectEntity>();
+
+        if (form.NewImage != null)
+            entity.Image = await _fileHandler.UploadFileAsync(form.NewImage);
+        else if (form.Image != null)
+            entity.Image = form.Image;
+
         var result = await _projectRepo.UpdateAsync(entity);
         return result.MapTo<ServiceResult>();
     }

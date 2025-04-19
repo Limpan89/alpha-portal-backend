@@ -22,15 +22,19 @@ public interface IUserService
     Task<ServiceResult<string>> GetUserRoleAsync(string userId);
 }
 
-public class UserService(IUserRepository userRepo, UserManager<UserEntity> userManager, RoleManager<IdentityRole> roleManger, IPostalAddressService postalService, ICacheHandler<IEnumerable<UserModel>> userCache, ICacheHandler<IEnumerable<IdentityRole>> roleCache) : IUserService
+public class UserService(IUserRepository userRepo, UserManager<UserEntity> userManager, RoleManager<IdentityRole> roleManger, IPostalAddressService postalService, ICacheHandler<IEnumerable<UserModel>> userCache, ICacheHandler<IEnumerable<IdentityRole>> roleCache, IFileHandler fileHandler) : IUserService
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly UserManager<UserEntity> _userManager = userManager;
     private readonly RoleManager<IdentityRole> _roleManger = roleManger;
     private readonly IPostalAddressService _postalService = postalService;
     private readonly IUserEntityFactory _userFactory = new UserEntityFactory();
+
     private readonly ICacheHandler<IEnumerable<UserModel>> _userCache = userCache;
     private readonly ICacheHandler<IEnumerable<IdentityRole>> _roleCache = roleCache;
+    private const string _CACHE_KEY = "CACHE_KEY_ALL_USERS";
+
+    private readonly IFileHandler _fileHandler = fileHandler;
 
     public async Task<ServiceResult<UserModel>> GetUserByIdAsync(string userId)
     {
@@ -78,6 +82,9 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
         await _postalService.AddPostalAddressAsync(new PostalAddressEntity { PostalCode = form.PostalCode, CityName = form.CityName });
 
         var entity = _userFactory.MapModelToEntity(form);
+        if (form.NewImage != null)
+            entity.Profile!.Image = await _fileHandler.UploadFileAsync(form.NewImage);
+
         var result = await _userRepo.AddAsync(entity);
 
         ServiceResult RoleResult;
@@ -121,6 +128,9 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
             return new ServiceResult { Succeeded = false, StatusCode = 404, Message = "User not found" };
 
         var entity = _userFactory.MapModelToEntity(form, modelResult.Result!);
+
+
+
         var result = await _userRepo.UpdateAsync(entity);
         return result.MapTo<ServiceResult>();
     }

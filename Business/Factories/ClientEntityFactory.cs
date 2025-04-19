@@ -42,7 +42,6 @@ public class ClientEntityFactory : IClientEntityFactory
             ClientName = form.ClientName,
             Email = form.Email,
             Phone = form.Phone,
-            Image = form.Image,
             Billing = new ClientBillingEntity
             {
                 ClientId = clientId,

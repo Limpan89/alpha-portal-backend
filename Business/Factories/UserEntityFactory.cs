@@ -62,7 +62,6 @@ public class UserEntityFactory : IUserEntityFactory
                 LastName = form.LastName,
                 Phone = form.Phone,
                 JobTitle = form.JobTitle,
-                Image = form.Image
             },
             Address = new UserAddressEntity
             {

@@ -1,4 +1,5 @@
 ﻿using Business.Factories;
+using Business.Handlers;
 using Business.Models;
 using Data.Entities;
 using Data.Repositories;
@@ -16,11 +17,12 @@ namespace Business.Services
         Task<ServiceResult> UpdateClientAsync(EditClientFormDto form);
     }
 
-    public class ClientService(IClientRepository clientRepo, IPostalAddressService postalService) : IClientService
+    public class ClientService(IClientRepository clientRepo, IPostalAddressService postalService, IFileHandler fileHandler) : IClientService
     {
         private readonly IClientRepository _clientRepo = clientRepo;
         private readonly IPostalAddressService _postalService = postalService;
         private readonly IClientEntityFactory _clientFactory = new ClientEntityFactory();
+        private readonly IFileHandler _fileHandler = fileHandler;
 
         public async Task<ServiceResult<IEnumerable<ClientModel>>> GetClientsAsync()
         {
@@ -41,6 +43,9 @@ namespace Business.Services
             await _postalService.AddPostalAddressAsync(new PostalAddressEntity { PostalCode = form.PostalCode, CityName = form.CityName });
 
             var entity = _clientFactory.MapModelToEntity(form);
+            if (form.NewImage != null)
+                entity.Image = await _fileHandler.UploadFileAsync(form.NewImage);
+
             var result = await _clientRepo.AddAsync(entity);
             return result.MapTo<ServiceResult>();
         }
@@ -52,7 +57,13 @@ namespace Business.Services
             await _postalService.AddPostalAddressAsync(new PostalAddressEntity { PostalCode = form.PostalCode, CityName = form.CityName });
             
             var entity = _clientFactory.MapModelToEntity(form);
-            var result = await _clientRepo.UpdateAsync(entity);
+
+            if (form.NewImage != null)
+                entity.Image = await _fileHandler.UploadFileAsync(form.NewImage);
+            else if (form.Image != null)
+                entity.Image = form.Image;
+
+                var result = await _clientRepo.UpdateAsync(entity);
             return result.MapTo<ServiceResult>();
         }
 
