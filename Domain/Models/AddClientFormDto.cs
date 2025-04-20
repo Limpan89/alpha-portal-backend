@@ -1,14 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
 
-namespace Business.Models;
+namespace Domain.Models;
 
-public class EditClientFormDto
+public class AddClientFormDto
 {
-    public string Id { get; set; } = null!;
     public string ClientName { get; set; } = null!;
     public string? Email { get; set; }
     public string? Phone { get; set; }
-    public string? Image { get; set; }
+    public IFormFile? NewImage { get; set; }
     public string BillingAddress { get; set; } = null!;
     public string BillingReference { get; set; } = null!;
     public int PostalCode { get; set; }

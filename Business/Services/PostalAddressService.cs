@@ -31,6 +31,10 @@ public class PostalAddressService(IPostalAddressRepository postalRepo) : IPostal
 
     public async Task<ServiceResult> AddPostalAddressAsync(PostalAddressEntity entity)
     {
+        var any = await _postalRepo.ExistsAsync(p => p.PostalCode == entity.PostalCode);
+        if (any.Succeeded)
+            return new ServiceResult { Succeeded = false, StatusCode = 409, Message = "The Postal Address allready exists" };
+
         var result = await _postalRepo.AddAsync(entity);
         return result.MapTo<ServiceResult>();
     }

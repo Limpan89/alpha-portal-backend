@@ -7,4 +7,4 @@ namespace Data.Repositories;
 
 public interface IStatusRepository : IBaseRepository<StatusEntity, StatusModel> { }
 
-public class StatusRepository(DataContext context, IMemoryCache cache) : BaseRepository<StatusEntity, StatusModel>(context, cache), IStatusRepository { }
+public class StatusRepository(DataContext context) : BaseRepository<StatusEntity, StatusModel>(context), IStatusRepository { }

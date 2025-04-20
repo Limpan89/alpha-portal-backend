@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
 
-namespace Business.Models;
+namespace Domain.Models;
 
 public class AddUserFormDto
 {
@@ -8,10 +8,10 @@ public class AddUserFormDto
     public string LastName { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string Phone { get; set; } = null!;
-    public string? JobTitle { get; set; }
-    public string? Image { get; set; }
-    public string? Role { get; set; }
-    public string? StreetAddress { get; set; }
+    public string JobTitle { get; set; } = null!;
+    public IFormFile? NewImage { get; set; }
+    public string Role { get; set; } = null!;
+    public string StreetAddress { get; set; } = null!;
     public int PostalCode { get; set; }
     public string CityName { get; set; } = null!;
 }

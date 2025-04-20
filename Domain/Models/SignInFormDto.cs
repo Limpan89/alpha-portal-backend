@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
-
-namespace Business.Models;
+﻿namespace Domain.Models;
 
 public class SignInFormDto
 {

@@ -21,17 +21,19 @@ public class AddUserFormViewModel
     [DataType(DataType.PhoneNumber)]
     public string Phone { get; set; } = null!;
 
+    [Required]
     [DataType(DataType.Text)]
-    public string? JobTitle { get; set; }
+    public string JobTitle { get; set; } = null!;
 
-    [DataType(DataType.ImageUrl)]
-    public string? Image { get; set; }
+    public IFormFile? NewImage { get; set; }
 
+    [Required]
     [DataType(DataType.Text)]
-    public string? Role { get; set; }
+    public string Role { get; set; } = null!;
 
+    [Required]
     [DataType(DataType.Text)]
-    public string? StreetAddress { get; set; }
+    public string StreetAddress { get; set; } = null!;
 
     [Required]
     [DataType(DataType.PostalCode)]

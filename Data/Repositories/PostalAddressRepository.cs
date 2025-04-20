@@ -7,4 +7,4 @@ namespace Data.Repositories;
 
 public interface IPostalAddressRepository : IBaseRepository<PostalAddressEntity, PostalAddressModel> { }
 
-public class PostalAddressRepository(DataContext context, IMemoryCache cache) : BaseRepository<PostalAddressEntity, PostalAddressModel>(context, cache), IPostalAddressRepository { }
+public class PostalAddressRepository(DataContext context) : BaseRepository<PostalAddressEntity, PostalAddressModel>(context), IPostalAddressRepository { }

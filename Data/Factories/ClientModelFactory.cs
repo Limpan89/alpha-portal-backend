@@ -4,7 +4,7 @@ using Domain.Models;
 
 namespace Data.Factories;
 
-interface IClientModelFactory : IModelFactory<ClientEntity, ClientModel> { }
+public interface IClientModelFactory : IModelFactory<ClientEntity, ClientModel> { }
 
 public class ClientModelFactory : IClientModelFactory
 {
@@ -17,9 +17,9 @@ public class ClientModelFactory : IClientModelFactory
             Email = entity.Email,
             Phone = entity.Phone,
             Image = entity.Image,
-            BillingAddress = entity.Billing!.BillingAddress,
-            BillingReference = entity.Billing!.BillingReference,
-            PostalAddress = entity.Billing.PostalAddress.MapTo<PostalAddressModel>()
+            BillingAddress = entity.Billing?.BillingAddress,
+            BillingReference = entity.Billing?.BillingReference,
+            PostalAddress = entity.Billing?.PostalAddress.MapTo<PostalAddressModel>()
         };
         return model;
     }

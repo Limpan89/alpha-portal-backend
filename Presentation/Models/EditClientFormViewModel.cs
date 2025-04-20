@@ -23,6 +23,8 @@ public class EditClientFormViewModel
     [DataType(DataType.ImageUrl)]
     public string? Image { get; set; }
 
+    public IFormFile? NewImage { get; set; }
+
     [Required]
     [DataType(DataType.Text)]
     public string BillingAddress { get; set; } = null!;

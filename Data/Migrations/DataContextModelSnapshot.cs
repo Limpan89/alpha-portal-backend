@@ -57,6 +57,9 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("Date");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -79,10 +82,7 @@ namespace Data.Migrations
             modelBuilder.Entity("Data.Entities.PostalAddressEntity", b =>
                 {
                     b.Property<int>("PostalCode")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PostalCode"));
 
                     b.Property<string>("CityName")
                         .IsRequired()
@@ -167,7 +167,7 @@ namespace Data.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("PostalCode")
+                    b.Property<int?>("PostalCode")
                         .HasColumnType("int");
 
                     b.Property<string>("StreetAddress")
@@ -455,9 +455,7 @@ namespace Data.Migrations
                 {
                     b.HasOne("Data.Entities.PostalAddressEntity", "PostalAddress")
                         .WithMany("Users")
-                        .HasForeignKey("PostalCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PostalCode");
 
                     b.HasOne("Data.Entities.UserEntity", "User")
                         .WithOne("Address")

@@ -1,13 +1,13 @@
-﻿using Domain.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
 
-namespace Business.Models;
+namespace Domain.Models;
 
 public class EditProjectFormDto
 {
     public string Id { get; set; } = null!;
     public string ProjectName { get; set; } = null!;
     public string? Description { get; set; }
+    public IFormFile? NewImage { get; set; }
     public string? Image { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

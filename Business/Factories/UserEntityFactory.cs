@@ -9,9 +9,12 @@ using System.Threading.Tasks;
 
 namespace Business.Factories;
 
-public interface IUserEntityFactory : IEntityFactory<UserEntity, UserModel, AddUserFormDto, EditUserFormDto>
+public interface IUserEntityFactory
 {
-    public UserEntity MapSignUpToUserEntity(SignUpFormDto form);
+    UserEntity MapModelToEntity(AddUserFormDto form);
+    UserEntity MapModelToEntity(EditUserFormDto form, UserModel model);
+    UserEntity MapModelToEntity(UserModel model);
+    UserEntity MapSignUpToUserEntity(SignUpFormDto form);
 }
 
 public class UserEntityFactory : IUserEntityFactory
@@ -21,6 +24,8 @@ public class UserEntityFactory : IUserEntityFactory
         var entity = new UserEntity
         {
             Id = model.Id,
+            Email = model.Email,
+            UserName = model.Email,
 
             Profile = new UserProfileEntity
             {
@@ -57,7 +62,6 @@ public class UserEntityFactory : IUserEntityFactory
                 LastName = form.LastName,
                 Phone = form.Phone,
                 JobTitle = form.JobTitle,
-                Image = form.Image
             },
             Address = new UserAddressEntity
             {
@@ -69,11 +73,13 @@ public class UserEntityFactory : IUserEntityFactory
         return entity;
     }
 
-    public UserEntity MapModelToEntity(EditUserFormDto form)
+    public UserEntity MapModelToEntity(EditUserFormDto form, UserModel model)
     {
         var entity = new UserEntity
         {
             Id = form.Id,
+            Email = model.Email,
+            UserName = model.Email,
 
             Profile = new UserProfileEntity
             {
@@ -101,6 +107,8 @@ public class UserEntityFactory : IUserEntityFactory
         {
             Id = userId,
             Email = form.Email,
+            UserName = form.Email,
+
             Profile = new UserProfileEntity
             {
                 UserId = userId,

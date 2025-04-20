@@ -19,6 +19,8 @@ public class EditProjectFormViewModel
     [DataType(DataType.ImageUrl)]
     public string? Image { get; set; }
 
+    public IFormFile? NewImage { get; set; }
+
     [Required]
     [DataType(DataType.DateTime)]
     public DateTime StartDate { get; set; }

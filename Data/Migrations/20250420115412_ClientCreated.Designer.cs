@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250412123252_Init")]
-    partial class Init
+    [Migration("20250420115412_ClientCreated")]
+    partial class ClientCreated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,32 @@ namespace Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Data.Entities.ClientBillingEntity", b =>
+                {
+                    b.Property<string>("ClientId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BillingAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BillingReference")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("PostalCode")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClientId");
+
+                    b.HasIndex("BillingReference")
+                        .IsUnique();
+
+                    b.HasIndex("PostalCode");
+
+                    b.ToTable("ClientBillings");
+                });
+
             modelBuilder.Entity("Data.Entities.ClientEntity", b =>
                 {
                     b.Property<string>("Id")
@@ -34,7 +60,18 @@ namespace Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("Date");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -45,12 +82,26 @@ namespace Data.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("Data.Entities.PostalAddressEntity", b =>
+                {
+                    b.Property<int>("PostalCode")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PostalCode");
+
+                    b.ToTable("PostalAddresses");
+                });
+
             modelBuilder.Entity("Data.Entities.ProjectEntity", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<decimal?>("Budget")
+                    b.Property<decimal>("Budget")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ClientId")
@@ -70,6 +121,7 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProjectName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDate")
@@ -118,16 +170,15 @@ namespace Data.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("CityName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PostalCode")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("PostalCode")
+                        .HasColumnType("int");
 
                     b.Property<string>("StreetAddress")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("PostalCode");
 
                     b.ToTable("UserAddresses");
                 });
@@ -203,6 +254,7 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
@@ -212,6 +264,7 @@ namespace Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
@@ -355,6 +408,25 @@ namespace Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Data.Entities.ClientBillingEntity", b =>
+                {
+                    b.HasOne("Data.Entities.ClientEntity", "Client")
+                        .WithOne("Billing")
+                        .HasForeignKey("Data.Entities.ClientBillingEntity", "ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Data.Entities.PostalAddressEntity", "PostalAddress")
+                        .WithMany("Clients")
+                        .HasForeignKey("PostalCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("PostalAddress");
+                });
+
             modelBuilder.Entity("Data.Entities.ProjectEntity", b =>
                 {
                     b.HasOne("Data.Entities.ClientEntity", "Client")
@@ -384,11 +456,17 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Entities.UserAddressEntity", b =>
                 {
+                    b.HasOne("Data.Entities.PostalAddressEntity", "PostalAddress")
+                        .WithMany("Users")
+                        .HasForeignKey("PostalCode");
+
                     b.HasOne("Data.Entities.UserEntity", "User")
                         .WithOne("Address")
                         .HasForeignKey("Data.Entities.UserAddressEntity", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("PostalAddress");
 
                     b.Navigation("User");
                 });
@@ -457,7 +535,16 @@ namespace Data.Migrations
 
             modelBuilder.Entity("Data.Entities.ClientEntity", b =>
                 {
+                    b.Navigation("Billing");
+
                     b.Navigation("Projects");
+                });
+
+            modelBuilder.Entity("Data.Entities.PostalAddressEntity", b =>
+                {
+                    b.Navigation("Clients");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Data.Entities.StatusEntity", b =>
