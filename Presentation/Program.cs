@@ -130,7 +130,7 @@ public class Program
         {
             x.AddPolicy("Strict", x =>
             {
-                x.WithOrigins("http://localhost:5173")
+                x.WithOrigins("https://happy-flower-079ea2e03.6.azurestaticapps.net/")
                  .WithMethods("GET", "POST", "PUT", "DELETE")
                  .WithHeaders("Content-Type", "Authorization", "X-ADM-API-KEY")
                  .AllowCredentials();
@@ -146,10 +146,10 @@ public class Program
         });
 
         var app = builder.Build();
-
-        //await SeedData.SetRolesAsync(app);
-        //await SeedData.SetStatusAsync(app);
-
+        /*
+        await SeedData.SetRolesAsync(app);
+        await SeedData.SetStatusAsync(app);
+        */
         app.MapOpenApi();
 
         app.UseHttpsRedirection();
