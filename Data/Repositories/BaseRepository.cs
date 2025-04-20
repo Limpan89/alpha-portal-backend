@@ -22,21 +22,18 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
 {
     protected readonly DataContext _context;
     protected readonly DbSet<TEntity> _dbSet;
-    protected readonly IMemoryCache _cache;
     protected readonly IModelFactory<TEntity, TModel>? _modelFactory = null;
 
-    protected BaseRepository(DataContext context, IMemoryCache cache)
+    protected BaseRepository(DataContext context)
     {
         _context = context;
         _dbSet = _context.Set<TEntity>();
-        _cache = cache;
     }
 
-    protected BaseRepository(DataContext context, IMemoryCache cache, IModelFactory<TEntity, TModel> modelFactory)
+    protected BaseRepository(DataContext context, IModelFactory<TEntity, TModel> modelFactory)
     {
         _context = context;
         _dbSet = _context.Set<TEntity>();
-        _cache = cache;
         _modelFactory = modelFactory;
     }
 
@@ -58,7 +55,6 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         {
             _dbSet.Add(entity);
             await _context.SaveChangesAsync();
-            ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 201 };
         }
         catch (Exception ex)
@@ -79,7 +75,6 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         {
             _dbSet.Update(entity);
             await _context.SaveChangesAsync();
-            ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 200 };
         }
         catch (Exception ex)
@@ -101,7 +96,6 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         {
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
-            ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 200 };
         }
         catch (Exception ex)
@@ -116,10 +110,6 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
     public virtual async Task<RepositoryResult<IEnumerable<TModel>>> GetAllAsync(bool orderByDesc = false, Expression<Func<TEntity, object>>? sortBy = null,
         Expression<Func<TEntity, bool>>? filterBy = null, params Expression<Func<TEntity, object>>[] includes)
     {
-        string cacheKey = GenerateCacheKey(orderByDesc, sortBy, filterBy);
-        IEnumerable<TModel>? models;
-        if (_cache.TryGetValue(cacheKey, out models))
-            return new RepositoryResult<IEnumerable<TModel>> { Succeeded = true, StatusCode = 200, Result = models };
 
         IQueryable<TEntity> query = _dbSet;
 
@@ -136,21 +126,15 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
             query = orderByDesc ? query.OrderByDescending(sortBy) : query.OrderBy(sortBy);
 
         var entities = await query.ToListAsync();
-        models = _modelFactory != null
+        var models = _modelFactory != null
             ? entities.Select(e => _modelFactory.MapEntityToModel(e))
             : entities.Select(e => e.MapTo<TModel>());
-        AddToCache<IEnumerable<TModel>>(cacheKey, models);
 
         return new RepositoryResult<IEnumerable<TModel>> { Succeeded = true, StatusCode = 200, Result = models };
     }
 
     public virtual async Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes)
     {
-        TModel? model;
-        string cacheKey = GenerateCacheKey(findBy);
-        if (_cache.TryGetValue<TModel>(cacheKey, out model))
-            return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 200, Result = model };
-
         IQueryable<TEntity> query = _dbSet;
 
         if (includes != null && includes.Length > 0)
@@ -163,55 +147,10 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         if (entity == null)
             return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 404 };
 
-        model = _modelFactory != null
+        var model = _modelFactory != null
             ? _modelFactory.MapEntityToModel(entity)
             : entity.MapTo<TModel>();
-        AddToCache<TModel>(cacheKey, model);
 
         return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 200, Result = model! };
     }
-
-    #region "Cache"
-    public string GenerateCacheKey(Expression<Func<TEntity, bool>> findBy)
-    {
-        return $"{typeof(TEntity).Name}_{findBy.ToString()}";
-    }
-
-    public string GenerateCacheKey(bool orderByDesc, Expression<Func<TEntity, object>>? sortBy, Expression<Func<TEntity, bool>>? filterBy)
-    {
-        string orderFragment = orderByDesc ? "_descending" : "_ascending";
-        string sortFragment = sortBy != null ? $"_{sortBy.ToString()}" : "";
-        string filterFragment = filterBy != null ? $"_{filterBy.ToString()}" : "";
-        return $"{typeof(TEntity).Name}_All{orderFragment}{sortFragment}{filterFragment}";
-    }
-
-    public void ClearCache()
-    {
-        var setKey = $"{typeof(TEntity).Name}_Keys";
-        if (!_cache.TryGetValue(setKey, out HashSet<string>? keys))
-            return;
-
-        foreach (var key in keys)
-            _cache.Remove(key);
-        _cache.Remove(setKey);
-    }
-
-    public void AddToCache<T>(string key, T value)
-    {
-        _cache.CreateEntry(key);
-        _cache.Set<T>(key, value);
-
-        var setKey = $"{typeof(TEntity).Name}_Keys";
-        var keys = _cache.GetOrCreate<HashSet<string>>(setKey, e =>
-        {
-            e.SlidingExpiration = TimeSpan.FromMinutes(60);
-            return new HashSet<string>();
-        });
-
-        if (!keys.Contains(key))
-            keys.Add(key);
-
-        _cache.Set(setKey, keys);
-    }
-    #endregion
 }

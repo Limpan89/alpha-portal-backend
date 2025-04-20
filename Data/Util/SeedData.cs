@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Data.Repositories;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +17,19 @@ public static class SeedData
         {
             if (!await roleManager.RoleExistsAsync(r))
                 await roleManager.CreateAsync(new IdentityRole(r));
+        }
+    }
+
+    public static async Task SetStatusAsync(IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
+        var statusRepo = scope.ServiceProvider.GetRequiredService<IStatusRepository>();
+        string[] statusNames = { "Started", "Completed" };
+
+        foreach (var s in statusNames)
+        {
+            if (!(await statusRepo.ExistsAsync(e => e.StatusName == s)).Succeeded)
+                await statusRepo.AddAsync(new Entities.StatusEntity { StatusName = s });
         }
     }
 }

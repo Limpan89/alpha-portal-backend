@@ -19,6 +19,7 @@ public class SignUpFormViewModel
 
     [Required]
     [Compare(nameof(ConfirmPassword))]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>\/?]).+$")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = null!;
 

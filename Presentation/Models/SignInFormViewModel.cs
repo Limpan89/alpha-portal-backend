@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
 
 namespace Business.Models;
 
@@ -11,6 +10,7 @@ public class SignInFormViewModel
     public string Email { get; set; } = null!;
 
     [Required]
+    [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>\/?]).+$")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = null!;
 }

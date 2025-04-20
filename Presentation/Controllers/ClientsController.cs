@@ -20,7 +20,7 @@ namespace Presentation.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _clientService.GetClientsAsync();
+            var result = await _clientService.GetAllClientsAsync();
             return result.Succeeded ? Ok(result.Result) : NotFound();
         }
 

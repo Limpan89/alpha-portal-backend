@@ -29,7 +29,7 @@ namespace Presentation.Controllers
                     token = result.Token,
                     isAdmin = result.IsAdmin,
                     apiKey = result.ApiKey,
-                    userId = result.UserId 
+                    user = result.User 
                 }) 
                 : NotFound();
         }

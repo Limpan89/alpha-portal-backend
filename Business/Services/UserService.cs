@@ -22,7 +22,7 @@ public interface IUserService
     Task<ServiceResult<string>> GetUserRoleAsync(string userId);
 }
 
-public class UserService(IUserRepository userRepo, UserManager<UserEntity> userManager, RoleManager<IdentityRole> roleManger, IPostalAddressService postalService, ICacheHandler<IEnumerable<UserModel>> userCache, ICacheHandler<IEnumerable<IdentityRole>> roleCache, IFileHandler fileHandler) : IUserService
+public class UserService(IUserRepository userRepo, UserManager<UserEntity> userManager, RoleManager<IdentityRole> roleManger, IPostalAddressService postalService, ICacheHandler<IEnumerable<UserModel>> userCache, IFileHandler fileHandler) : IUserService
 {
     private readonly IUserRepository _userRepo = userRepo;
     private readonly UserManager<UserEntity> _userManager = userManager;
@@ -31,43 +31,75 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
     private readonly IUserEntityFactory _userFactory = new UserEntityFactory();
 
     private readonly ICacheHandler<IEnumerable<UserModel>> _userCache = userCache;
-    private readonly ICacheHandler<IEnumerable<IdentityRole>> _roleCache = roleCache;
     private const string _CACHE_KEY = "CACHE_KEY_ALL_USERS";
 
     private readonly IFileHandler _fileHandler = fileHandler;
 
     public async Task<ServiceResult<UserModel>> GetUserByIdAsync(string userId)
     {
-        var result = await _userRepo.GetAsync(u => u.Id == userId, i => i.Profile, i => i.Address, i => i.Address!.PostalAddress);
-        if (result.Result != null)
+        UserModel? match = null;
+        var cached = _userCache.Get(_CACHE_KEY);
+
+        if (cached != null)
+            match = cached.FirstOrDefault(u => u.Id == userId);
+
+        if (match == null)
         {
-            var role = await GetUserRoleAsync(result.Result.Id);
-            result.Result.Role = role.Result;
+            var models = await UpdateCache();
+
+            if (models == null)
+                return new ServiceResult<UserModel>
+                {
+                    Succeeded = false,
+                    StatusCode = 400
+                };
+
+            match = models.FirstOrDefault(u => u.Id == userId);
         }
-        return result.MapTo<ServiceResult<UserModel>>();
+        if (match == null)
+            return new ServiceResult<UserModel> { Succeeded = false, StatusCode = 404 };
+
+        return new ServiceResult<UserModel> { Succeeded = true, StatusCode = 200, Result = match };
     }
 
     public async Task<ServiceResult<UserModel>> GetUserByEmailAsync(string email)
     {
-        var result = await _userRepo.GetAsync(u => u.Email == email, i => i.Profile, i => i.Address, i => i.Address!.PostalAddress);
-        if (result.Result != null)
+        UserModel? match = null;
+        var cached = _userCache.Get(_CACHE_KEY);
+
+        if (cached != null)
+            match = cached.FirstOrDefault(u => u.Email == email);
+
+        if (match == null)
         {
-            var role = await GetUserRoleAsync(result.Result.Id);
-            result.Result.Role = role.Result;
+            var models = await UpdateCache();
+
+            if (models == null)
+                return new ServiceResult<UserModel>
+                {
+                    Succeeded = false,
+                    StatusCode = 400
+                };
+
+            match = models.FirstOrDefault(u => u.Email == email);
         }
-        return result.MapTo<ServiceResult<UserModel>>();
+        if (match == null)
+            return new ServiceResult<UserModel> { Succeeded = false, StatusCode = 404 };
+
+        return new ServiceResult<UserModel> { Succeeded = true, StatusCode = 200, Result = match };
     }
 
     public async Task<ServiceResult<IEnumerable<UserModel>>> GetAllUsersAsync()
     {
-        var result = await _userRepo.GetAllAsync(orderByDesc: false, sortBy: u => u.Profile!.LastName, filterBy: null, i => i.Profile, i => i.Address, i => i.Address!.PostalAddress);
-        if (result.Result != null)
-        {
-            var userRoles = await GetAllUserRolesAsync();
-            foreach (var u in result.Result)
-                u.Role = userRoles.Result![u.Email];
-        }
-        return result.MapTo<ServiceResult<IEnumerable<UserModel>>>();
+        var cached = _userCache.Get(_CACHE_KEY);
+        if (cached != null)
+            return new ServiceResult<IEnumerable<UserModel>> { Succeeded = true, StatusCode = 200, Result = cached };
+
+        var models = await UpdateCache();
+        if (models == null)
+            return new ServiceResult<IEnumerable<UserModel>> { Succeeded = false, StatusCode = 400 };
+
+        return new ServiceResult<IEnumerable<UserModel>> { Succeeded = true, StatusCode = 200, Result = models };
     }
 
     public async Task<ServiceResult> AddUserAsync(AddUserFormDto form)
@@ -91,6 +123,7 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
         if (result.Succeeded)
             RoleResult = await AddUserToRoleAsync(entity.Id, form.Role);
 
+        await UpdateCache();
         return result.MapTo<ServiceResult>();
     }
 
@@ -113,6 +146,7 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
         if (result.Succeeded)
             RoleResult = await AddUserToRoleAsync(entity.Id, roleName);
 
+        await UpdateCache();
         return result.MapTo<ServiceResult>();
     }
 
@@ -129,15 +163,20 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
 
         var entity = _userFactory.MapModelToEntity(form, modelResult.Result!);
 
-
+        if (form.NewImage != null)
+            entity.Profile.Image = await _fileHandler.UploadFileAsync(form.NewImage);
+        else if (form.Image != null)
+            entity.Profile.Image = form.Image;
 
         var result = await _userRepo.UpdateAsync(entity);
+        await UpdateCache();
         return result.MapTo<ServiceResult>();
     }
 
     public async Task<ServiceResult> DeleteUserAsync(string userId)
     {
         var result = await _userRepo.DeleteAsync(u => u.Id == userId);
+        await UpdateCache();
         return result.MapTo<ServiceResult>();
     }
 
@@ -175,6 +214,22 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
             : new ServiceResult { Succeeded = false, StatusCode = 500, Message = "Unable to add user to new role." };
     }
 
+    public async Task<ServiceResult> RemoveUserRoleAsync(string userId, string roleName)
+    {
+        if (!await _roleManger.RoleExistsAsync(roleName))
+            return new ServiceResult { Succeeded = false, StatusCode = 404, Message = "Role not found." };
+
+        var entity = await _userManager.FindByIdAsync(userId);
+        if (entity == null)
+            return new ServiceResult { Succeeded = false, StatusCode = 404, Message = "User not found." };
+
+        var remove = await _userManager.RemoveFromRoleAsync(entity, roleName);
+        if (!remove.Succeeded)
+            return new ServiceResult { Succeeded = false, StatusCode = 500, Message = "Unable to remove user from old role." };
+
+        return new ServiceResult { Succeeded = true, StatusCode = 200 };
+    }
+
     public async Task<ServiceResult<string>> GetUserRoleAsync(string userId)
     {
         var entity = await _userManager.FindByIdAsync(userId);
@@ -201,4 +256,20 @@ public class UserService(IUserRepository userRepo, UserManager<UserEntity> userM
         }
         return new ServiceResult<IDictionary<string, string>> { Succeeded = true, StatusCode = 200, Result = userRoles };
     }
+
+    public async Task<IEnumerable<UserModel>>? UpdateCache()
+    {
+        var result = await _userRepo.GetAllAsync(orderByDesc: false, sortBy: u => u.Profile!.LastName, filterBy: null, i => i.Profile, i => i.Address, i => i.Address!.PostalAddress);
+
+        if (!result.Succeeded)
+            return null;
+
+        var userRoles = await GetAllUserRolesAsync();
+        var users = result.Result.ToList();
+        foreach (var u in users)
+            u.Role = userRoles.Result[u.Email];
+
+        _userCache.Set(_CACHE_KEY, users);
+        return users;
+    } 
 }

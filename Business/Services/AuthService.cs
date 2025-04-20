@@ -47,7 +47,7 @@ public class AuthService(IUserService userService, SignInManager<UserEntity> sig
             Token = token,
             IsAdmin = admin,
             ApiKey = admin ? _configuration["SecretKeys:Admin"] : null,
-            UserId = userResult.Result.Id
+            User = userResult.Result
         };
     }
 

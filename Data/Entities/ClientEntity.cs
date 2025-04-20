@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Data.Entities;
 
@@ -12,6 +13,9 @@ public class ClientEntity
     public string Email { get; set; } = null!;
     public string Phone { get; set; } = null!;
     public string? Image { get; set; }
+
+    [Column(TypeName = "Date")]
+    public DateTime Created { get; set; } = DateTime.Now;
 
     public virtual ClientBillingEntity? Billing { get; set; }
 

@@ -1,4 +1,6 @@
-﻿namespace Business.Models;
+﻿using Domain.Models;
+
+namespace Business.Models;
 
 public class AuthResult
 {
@@ -7,5 +9,5 @@ public class AuthResult
     public string? Token { get; set; }
     public bool IsAdmin { get; set; }
     public string? ApiKey { get; set; }
-    public string? UserId { get; set; }
+    public UserModel? User { get; set; }
 }

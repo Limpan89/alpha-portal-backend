@@ -126,9 +126,29 @@ public class Program
             };
         });
 
+        builder.Services.AddCors(x =>
+        {
+            x.AddPolicy("Strict", x =>
+            {
+                x.WithOrigins("http://localhost:5173")
+                 .WithMethods("GET", "POST", "PUT", "DELETE")
+                 .WithHeaders("Content-Type", "Authorization", "X-ADM-API-KEY")
+                 .AllowCredentials();
+            });
+
+            x.AddPolicy("AllowAll", x =>
+            {
+                x.AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader();
+
+            });
+        });
+
         var app = builder.Build();
 
         //await SeedData.SetRolesAsync(app);
+        //await SeedData.SetStatusAsync(app);
 
         app.MapOpenApi();
 
@@ -136,6 +156,7 @@ public class Program
 
         //app.MapStaticAssets();
 
+        app.UseCors("Strict");
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -149,7 +170,6 @@ public class Program
         //app.MapControllers().WithStaticAssets();
 
         app.MapControllers();
-        app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
         app.Run();
     }

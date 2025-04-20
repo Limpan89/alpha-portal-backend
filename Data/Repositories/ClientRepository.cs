@@ -8,4 +8,4 @@ namespace Data.Repositories;
 
 public interface IClientRepository : IBaseRepository<ClientEntity, ClientModel> { }
 
-public class ClientRepository(DataContext context, IMemoryCache cache) : BaseRepository<ClientEntity, ClientModel>(context, cache, new ClientModelFactory()), IClientRepository { }
+public class ClientRepository(DataContext context) : BaseRepository<ClientEntity, ClientModel>(context, new ClientModelFactory()), IClientRepository { }

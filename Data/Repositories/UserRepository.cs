@@ -15,7 +15,7 @@ public interface IUserRepository : IBaseRepository<UserEntity, UserModel>
     public Task<RepositoryResult> AddAsync(UserEntity entity, string password);
 }
 
-public class UserRepository(DataContext context, IMemoryCache cache, UserManager<UserEntity> userManager) : BaseRepository<UserEntity, UserModel>(context, cache, new UserModelFactory()), IUserRepository
+public class UserRepository(DataContext context, UserManager<UserEntity> userManager) : BaseRepository<UserEntity, UserModel>(context, new UserModelFactory()), IUserRepository
 {
     private readonly UserManager<UserEntity> _userManager = userManager;
 
@@ -31,7 +31,6 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
             if (!result.Succeeded)
                 throw new Exception("Failed to sign up User.");
 
-            ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 201 };
         }
         catch (Exception ex)
@@ -55,7 +54,6 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
             if (!result.Succeeded)
                 throw new Exception("Failed to create User.");
 
-            ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 201 };
         }
         catch (Exception ex)
@@ -79,7 +77,6 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
             if (!result.Succeeded)
                 throw new Exception("Failed to update User.");
 
-            ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 200 };
         }
         catch (Exception ex)
@@ -104,7 +101,6 @@ public class UserRepository(DataContext context, IMemoryCache cache, UserManager
             if (!result.Succeeded)
                 throw new Exception("Failed to remove User.");
 
-            ClearCache();
             return new RepositoryResult { Succeeded = true, StatusCode = 200 };
         }
         catch (Exception ex)
