@@ -130,7 +130,7 @@ public class Program
         {
             x.AddPolicy("Strict", x =>
             {
-                x.WithOrigins("https://happy-flower-079ea2e03.6.azurestaticapps.net/")
+                x.WithOrigins("https://happy-flower-079ea2e03.6.azurestaticapps.net")
                  .WithMethods("GET", "POST", "PUT", "DELETE")
                  .WithHeaders("Content-Type", "Authorization", "X-ADM-API-KEY")
                  .AllowCredentials();
