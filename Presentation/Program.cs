@@ -97,7 +97,7 @@ public class Program
         {
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
             options.User.RequireUniqueEmail = true;
-        }); // Allows email to be used as username
+        }); // Allows email to be used as username --- AI - ChatGPT ---
 
         builder.Services.AddAuthentication(x =>
         {
