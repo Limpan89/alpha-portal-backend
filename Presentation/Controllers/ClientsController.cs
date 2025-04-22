@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Presentation.Extensions.Attributes;
 using Swashbuckle.AspNetCore.Annotations;
 
+// 90ish% Swagger doc ---AI - ChatGPT---
+
 namespace Presentation.Controllers
 {
     [Authorize]

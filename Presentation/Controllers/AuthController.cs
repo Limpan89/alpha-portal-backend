@@ -4,6 +4,8 @@ using Domain.Extensions;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
+// 90ish% Swagger doc ---AI - ChatGPT---
+
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
